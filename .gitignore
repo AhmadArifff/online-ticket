@@ -1,0 +1,84 @@
+# Git ignore for Laravel app inside src directory
+
+# environment files
+.env
+src/.env
+src/.env.*
+
+# vendor directories
+/vendor
+src/vendor
+
+# node modules
+/node_modules
+src/node_modules
+
+# Logs and caches
+/storage/*.key
+src/storage/*.key
+/storage/debugbar
+src/storage/debugbar
+/storage/*.log
+src/storage/framework/cache/data
+src/storage/framework/sessions
+src/storage/framework/testing
+src/storage/framework/views
+src/storage/logs
+src/storage/app/public
+src/storage/*.key
+src/bootstrap/cache/*.php
+src/.phpunit.result.cache
+
+# IDE files
+/.idea
+/.vscode
+*.sublime-workspace
+*.sublime-project
+
+# System files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Composer PHAR
+composer.phar
+
+# npm / yarn lockfiles if local build artifacts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vite / front-end build
+/public/build
+/public/hot
+/public/mix-manifest.json
+src/public/build
+src/public/hot
+src/public/mix-manifest.json
+
+# Docker / Compose generated
+docker-compose.override.yml
+.docker
+
+# PHPUnit
+phpunit.xml
+phpunit.xml.dist
+src/phpunit.xml
+src/phpunit.xml.dist
+
+# OS generated files
+*.log
+*.cache
+
+# Sensitive files
+src/.env.local
+src/.env.testing
+.env.local
+.env.testing
+
+# Generated IDE helper files
+_ide_helper.php
+_ide_helper_models.php
+phpstorm.meta.php
