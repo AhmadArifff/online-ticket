@@ -55,6 +55,39 @@
             background: white;
             margin-bottom: 2rem;
         }
+
+        .top-navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .top-navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-form {
+            display: inline;
+        }
+        
+        .logout-form button {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .logout-form button:hover {
+            text-decoration: underline;
+        }
         
         @media (max-width: 768px) {
             .sidebar {
@@ -99,9 +132,17 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/logout">
-                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                <a class="nav-link" href="/">
+                    <i class="fas fa-arrow-left me-2"></i> Kembali ke User
                 </a>
+            </li>
+            <li class="nav-item border-top mt-3 pt-3">
+                <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                    @csrf
+                    <button type="submit">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    </button>
+                </form>
             </li>
         </ul>
     </div>
@@ -119,7 +160,13 @@
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item"><a class="nav-link" href="/admin">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="/admin/events">Event</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/">Kembali ke User</a></li>
+                        <li class="nav-item">
+                            <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                                @csrf
+                                <button type="submit">Logout</button>
+                            </form>
+                        </li>
                     </ul>
                 </div>
             </div>

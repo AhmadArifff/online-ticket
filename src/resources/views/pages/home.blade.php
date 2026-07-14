@@ -44,56 +44,30 @@
     <!-- Events Grid -->
     <section>
         <div class="row g-4">
-            @php
-                $events = [
-                    [
-                        'name' => 'Konser Musik Elektro 2026',
-                        'category' => 'Konser',
-                        'description' => 'Kolaborasi musisi terbaik Indonesia dalam satu panggung yang spektakuler.',
-                        'venue' => 'Jakarta Convention Center',
-                        'start_date' => '15 Agustus 2026',
-                        'price' => 250000,
-                        'slug' => 'konser-musik-elektro',
-                        'banner_image' => 'https://via.placeholder.com/400x200?text=Konser+Musik',
-                    ],
-                    [
-                        'name' => 'Seminar Digital Marketing',
-                        'category' => 'Seminar',
-                        'description' => 'Pelajari strategi marketing digital terkini dari expert internasional.',
-                        'venue' => 'Gran Melia Hotel',
-                        'start_date' => '20 Agustus 2026',
-                        'price' => 350000,
-                        'slug' => 'seminar-digital-marketing',
-                        'banner_image' => 'https://via.placeholder.com/400x200?text=Seminar',
-                    ],
-                    [
-                        'name' => 'Pertandingan Basket Pro',
-                        'category' => 'Olahraga',
-                        'description' => 'Pertandingan puncak musim basket profesional Indonesia.',
-                        'venue' => 'Istora Senayan',
-                        'start_date' => '22 Agustus 2026',
-                        'price' => 150000,
-                        'slug' => 'pertandingan-basket-pro',
-                        'banner_image' => 'https://via.placeholder.com/400x200?text=Basket',
-                    ],
-                    [
-                        'name' => 'Workshop Fotografi',
-                        'category' => 'Workshop',
-                        'description' => 'Sesi workshop fotografi profesional dengan fotografer terkenal.',
-                        'venue' => 'Art Space Studio',
-                        'start_date' => '25 Agustus 2026',
-                        'price' => 200000,
-                        'slug' => 'workshop-fotografi',
-                        'banner_image' => 'https://via.placeholder.com/400x200?text=Workshop',
-                    ],
-                ];
-            @endphp
-            
-            @foreach($events as $event)
+            @forelse($featuredEvents as $event)
                 <div class="col-12 col-md-6 col-lg-3">
-                    <x-event-card :event="$event" />
+                    <div class="card h-100 shadow-sm hover-shadow" style="transition: transform 0.2s;">
+                        <img src="{{ $event->banner_image ?: 'https://via.placeholder.com/400x200?text=' . urlencode($event->name) }}" class="card-img-top" alt="{{ $event->name }}" style="height: 200px; object-fit: cover;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ $event->name }}</h5>
+                            <p class="text-muted small mb-2">{{ $event->category?->name ?? 'Event' }}</p>
+                            <p class="card-text flex-grow-1">{{ Str::limit($event->description, 100) }}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="h6 mb-0 text-success">
+                                    Rp {{ number_format($event->ticketTypes->min('price') ?? 0, 0, ',', '.') }}
+                                </span>
+                                <a href="{{ route('events.detail', $event->slug) }}" class="btn btn-sm btn-primary">
+                                    Lihat Detail
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            @endforeach
+            @empty
+                <div class="col-12 text-center">
+                    <p class="text-muted">Belum ada event yang tersedia.</p>
+                </div>
+            @endforelse
         </div>
     </section>
 </div>

@@ -7,97 +7,73 @@
     <h2 class="mb-4">Semua Event</h2>
 
     <!-- Filters -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <input type="text" class="form-control" placeholder="Cari event...">
+    <form method="GET" action="{{ route('events.search') }}" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="q" class="form-control" placeholder="Cari event..." value="{{ request('q') }}">
+            </div>
+            <div class="col-md-4">
+                <select name="category" class="form-select">
+                    <option value="">Semua Kategori</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->slug }}" {{ request('category') === $category->slug ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Cari</button>
+            </div>
         </div>
-        <div class="col-md-4">
-            <select class="form-select">
-                <option value="">Semua Kategori</option>
-                <option value="konser">Konser</option>
-                <option value="seminar">Seminar</option>
-                <option value="olahraga">Olahraga</option>
-                <option value="workshop">Workshop</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <input type="date" class="form-control" placeholder="Pilih Tanggal">
-        </div>
-    </div>
+    </form>
 
     <!-- Events List -->
     <div class="row g-4">
-        @php
-            $events = [
-                [
-                    'name' => 'Konser Musik Elektro 2026',
-                    'category' => 'Konser',
-                    'description' => 'Kolaborasi musisi terbaik Indonesia dalam satu panggung yang spektakuler.',
-                    'venue' => 'Jakarta Convention Center',
-                    'start_date' => '15 Agustus 2026',
-                    'price' => 250000,
-                    'slug' => 'konser-musik-elektro',
-                    'banner_image' => 'https://via.placeholder.com/400x200?text=Konser+Musik',
-                ],
-                [
-                    'name' => 'Seminar Digital Marketing',
-                    'category' => 'Seminar',
-                    'description' => 'Pelajari strategi marketing digital terkini dari expert internasional.',
-                    'venue' => 'Gran Melia Hotel',
-                    'start_date' => '20 Agustus 2026',
-                    'price' => 350000,
-                    'slug' => 'seminar-digital-marketing',
-                    'banner_image' => 'https://via.placeholder.com/400x200?text=Seminar',
-                ],
-                [
-                    'name' => 'Pertandingan Basket Pro',
-                    'category' => 'Olahraga',
-                    'description' => 'Pertandingan puncak musim basket profesional Indonesia.',
-                    'venue' => 'Istora Senayan',
-                    'start_date' => '22 Agustus 2026',
-                    'price' => 150000,
-                    'slug' => 'pertandingan-basket-pro',
-                    'banner_image' => 'https://via.placeholder.com/400x200?text=Basket',
-                ],
-                [
-                    'name' => 'Workshop Fotografi',
-                    'category' => 'Workshop',
-                    'description' => 'Sesi workshop fotografi profesional dengan fotografer terkenal.',
-                    'venue' => 'Art Space Studio',
-                    'start_date' => '25 Agustus 2026',
-                    'price' => 200000,
-                    'slug' => 'workshop-fotografi',
-                    'banner_image' => 'https://via.placeholder.com/400x200?text=Workshop',
-                ],
-                [
-                    'name' => 'Festival Kuliner Internasional',
-                    'category' => 'Festival',
-                    'description' => 'Nikmati kuliner terbaik dari berbagai negara di festival tahunan ini.',
-                    'venue' => 'Monas Bundaran',
-                    'start_date' => '28 Agustus 2026',
-                    'price' => 75000,
-                    'slug' => 'festival-kuliner',
-                    'banner_image' => 'https://via.placeholder.com/400x200?text=Festival',
-                ],
-                [
-                    'name' => 'Pameran Seni Kontemporer',
-                    'category' => 'Seni',
-                    'description' => 'Pameran karya seni kontemporer dari seniman lokal dan internasional.',
-                    'venue' => 'Art Gallery Indonesia',
-                    'start_date' => '01 September 2026',
-                    'price' => 100000,
-                    'slug' => 'pameran-seni',
-                    'banner_image' => 'https://via.placeholder.com/400x200?text=Seni',
-                ],
-            ];
-        @endphp
-        
-        @foreach($events as $event)
+        @forelse($events as $event)
             <div class="col-12 col-md-6 col-lg-4">
-                <x-event-card :event="$event" />
+                <div class="card h-100 shadow-sm hover-shadow" style="transition: transform 0.2s;">
+                    <img src="{{ $event->banner_image ?: 'https://via.placeholder.com/400x200?text=' . urlencode($event->name) }}" class="card-img-top" alt="{{ $event->name }}" style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ $event->name }}</h5>
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-tag"></i> {{ $event->category?->name ?? 'Event' }}
+                        </p>
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-map-marker-alt"></i> {{ $event->venue?->name ?? 'Lokasi' }}
+                        </p>
+                        <p class="card-text flex-grow-1">{{ Str::limit($event->description, 100) }}</p>
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-calendar"></i> {{ $event->start_date->format('d M Y') }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="h6 mb-0 text-success">
+                                Rp {{ number_format($event->ticketTypes->min('price') ?? 0, 0, ',', '.') }}
+                            </span>
+                            <a href="{{ route('events.detail', $event->slug) }}" class="btn btn-sm btn-primary">
+                                Lihat Detail
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-        @endforeach
+        @empty
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-inbox fa-5x text-muted mb-3"></i>
+                <p class="text-muted">Tidak ada event yang sesuai dengan pencarian Anda.</p>
+                <a href="{{ route('events.index') }}" class="btn btn-primary">Kembali ke Semua Event</a>
+            </div>
+        @endforelse
     </div>
+
+    @if($events instanceof \Illuminate\Pagination\Paginator)
+        <div class="d-flex justify-content-center mt-4">
+            {{ $events->links() }}
+        </div>
+    @endif
+</div>
+@endsection
+
 
     <!-- Pagination -->
     <div class="d-flex justify-content-center mt-5">

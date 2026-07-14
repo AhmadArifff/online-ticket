@@ -1,65 +1,72 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Event - Tiket Online')
+@section('title', $event->name . ' - Tiket Online')
 
 @section('content')
 <div class="container-fluid">
-    @php
-        $event = [
-            'name' => 'Konser Musik Elektro 2026',
-            'category' => 'Konser',
-            'description' => 'Kolaborasi musisi terbaik Indonesia dalam satu panggung yang spektakuler dengan performa luar biasa dan visual yang memukau. Event ini akan menghadirkan artis-artis ternama dan rising stars di musik elektronik Indonesia.',
-            'venue' => 'Jakarta Convention Center',
-            'address' => 'Jl. Gatot Subroto No. 1, Jakarta Selatan',
-            'start_date' => '15 Agustus 2026',
-            'end_date' => '15 Agustus 2026',
-            'time' => '19:00 - 23:00',
-            'price' => 250000,
-            'slug' => 'konser-musik-elektro',
-            'banner_image' => 'https://via.placeholder.com/800x400?text=Konser+Musik+Elektro',
-            'artists' => ['DJ Andi Putra', 'DJ Santi', 'DJ Budi Oetomo'],
-            'ticket_types' => [
-                ['name' => 'Regular', 'price' => 250000, 'quota' => 500, 'sold' => 120],
-                ['name' => 'VIP', 'price' => 500000, 'quota' => 200, 'sold' => 80],
-                ['name' => 'VVIP', 'price' => 1000000, 'quota' => 50, 'sold' => 30],
-            ]
-        ];
-    @endphp
-
     <div class="row">
         <div class="col-lg-8 mb-4">
             <!-- Banner -->
-            <img src="{{ $event['banner_image'] }}" class="img-fluid rounded mb-4" alt="{{ $event['name'] }}" style="width: 100%; height: auto;">
+            <img src="{{ $event->banner_image ?: 'https://via.placeholder.com/800x400?text=' . urlencode($event->name) }}" class="img-fluid rounded mb-4" alt="{{ $event->name }}" style="width: 100%; height: auto; max-height: 400px; object-fit: cover;">
 
             <!-- Event Info -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <h2 class="card-title mb-3">{{ $event['name'] }}</h2>
+                    <h2 class="card-title mb-3">{{ $event->name }}</h2>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <p><strong><i class="fas fa-map-marker-alt text-danger"></i> Lokasi:</strong></p>
-                            <p>{{ $event['venue'] }}<br>{{ $event['address'] }}</p>
+                            <p><strong><i class="fas fa-tag text-secondary"></i> Kategori:</strong></p>
+                            <p>{{ $event->category?->name ?? 'Event' }}</p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong><i class="fas fa-calendar text-primary"></i> Tanggal & Waktu:</strong></p>
-                            <p>{{ $event['start_date'] }}<br>{{ $event['time'] }}</p>
+                            <p><strong><i class="fas fa-map-marker-alt text-danger"></i> Lokasi:</strong></p>
+                            <p>{{ $event->venue?->name ?? 'Lokasi TBA' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-calendar text-primary"></i> Tanggal Mulai:</strong></p>
+                            <p>{{ optional($event->start_date)->format('d F Y H:i') ?? 'TBA' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-calendar-check text-success"></i> Tanggal Berakhir:</strong></p>
+                            <p>{{ optional($event->end_date)->format('d F Y H:i') ?? 'TBA' }}</p>
                         </div>
                     </div>
 
                     <hr>
 
                     <h5>Tentang Event</h5>
-                    <p>{{ $event['description'] }}</p>
-
-                    <h5 class="mt-4">Artis Pembawaan</h5>
-                    <ul>
-                        @foreach($event['artists'] as $artist)
-                            <li>{{ $artist }}</li>
-                        @endforeach
-                    </ul>
+                    <p>{{ $event->description }}</p>
                 </div>
             </div>
+
+            <!-- Related Events -->
+            @if($relatedEvents->count())
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Event Terkait</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            @foreach($relatedEvents as $related)
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <img src="{{ $related->banner_image ?: 'https://via.placeholder.com/300x150?text=' . urlencode($related->name) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ $related->name }}</h6>
+                                            <p class="text-muted small">{{ optional($related->start_date)->format('d M Y') }}</p>
+                                            <a href="{{ route('events.detail', $related->slug) }}" class="btn btn-sm btn-primary">Lihat</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Sidebar - Ticket Selection -->
@@ -69,36 +76,43 @@
                     <h5 class="mb-0">Pilih Jenis Tiket</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="/checkout">
-                        @csrf
-                        <input type="hidden" name="event_id" value="1">
+                    @if($event->ticketTypes->isEmpty())
+                        <p class="text-muted text-center py-4">Tiket belum tersedia untuk event ini.</p>
+                    @else
+                        <form method="POST" action="{{ route('checkout') }}">
+                            @csrf
+                            <input type="hidden" name="event_id" value="{{ $event->id }}">
 
-                        @foreach($event['ticket_types'] as $ticket)
-                            <div class="mb-3 p-3 border rounded">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label class="form-label fw-bold mb-0">{{ $ticket['name'] }}</label>
-                                    <span class="badge bg-info">{{ $ticket['quota'] - $ticket['sold'] }} tersedia</span>
+                            @foreach($event->ticketTypes as $ticketType)
+                                @php
+                                    $available = ($ticketType->quota ?? 0) - ($ticketType->sold ?? 0);
+                                @endphp
+                                <div class="mb-3 p-3 border rounded">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label fw-bold mb-0">{{ $ticketType->name }}</label>
+                                        <span class="badge bg-info">{{ $available }} tersedia</span>
+                                    </div>
+                                    
+                                    <p class="text-muted mb-2">Rp {{ number_format($ticketType->price, 0, ',', '.') }}</p>
+                                    
+                                    <div class="input-group">
+                                        <button type="button" class="btn btn-outline-secondary qty-minus" data-ticket="{{ $ticketType->id }}">-</button>
+                                        <input type="number" class="form-control text-center qty-input" name="qty_{{ $ticketType->id }}" value="0" min="0" max="{{ $available }}" data-price="{{ $ticketType->price }}">
+                                        <button type="button" class="btn btn-outline-secondary qty-plus" data-ticket="{{ $ticketType->id }}">+</button>
+                                    </div>
                                 </div>
-                                
-                                <p class="text-muted mb-2">Rp {{ number_format($ticket['price'], 0, ',', '.') }}</p>
-                                
-                                <div class="input-group">
-                                    <button type="button" class="btn btn-outline-secondary qty-minus" data-ticket="{{ $ticket['name'] }}">-</button>
-                                    <input type="number" class="form-control text-center qty-input" name="qty_{{ strtolower($ticket['name']) }}" value="0" min="0" data-price="{{ $ticket['price'] }}">
-                                    <button type="button" class="btn btn-outline-secondary qty-plus" data-ticket="{{ $ticket['name'] }}">+</button>
-                                </div>
+                            @endforeach
+
+                            <hr>
+
+                            <div class="mb-3">
+                                <p>Total Harga: <span class="h4 text-success" id="total-price">Rp 0</span></p>
                             </div>
-                        @endforeach
 
-                        <hr>
-
-                        <div class="mb-3">
-                            <p>Total Harga: <span class="h4 text-success" id="total-price">Rp 0</span></p>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 btn-lg">Lanjut ke Checkout</button>
-                        <a href="/events" class="btn btn-secondary w-100 mt-2">Kembali</a>
-                    </form>
+                            <button type="submit" class="btn btn-primary w-100 btn-lg" id="checkout-btn" disabled>Lanjut ke Checkout</button>
+                            <a href="{{ route('events.index') }}" class="btn btn-secondary w-100 mt-2">Kembali</a>
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>

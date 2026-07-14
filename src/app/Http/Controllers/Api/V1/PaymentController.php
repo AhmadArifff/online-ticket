@@ -14,15 +14,24 @@ class PaymentController extends Controller
         $validated = request()->validate([
             'booking_id' => 'required|exists:bookings,id',
             'payment_method' => 'required|in:transfer,card,ewallet',
+            'transaction_id' => 'required|string|unique:payments,transaction_id',
         ]);
 
         $booking = Booking::findOrFail($validated['booking_id']);
 
         $this->authorize('view', $booking);
 
+        if (!in_array($booking->status, ['pending', 'reserved'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Booking cannot be paid in its current status',
+            ], 422);
+        }
+
         $payment = Payment::create([
             'booking_id' => $booking->id,
             'payment_method' => $validated['payment_method'],
+            'transaction_id' => $validated['transaction_id'],
             'amount' => $booking->total_amount,
             'status' => 'pending',
         ]);
@@ -43,12 +52,22 @@ class PaymentController extends Controller
             ], 422);
         }
 
+        if ($payment->booking->status === 'expired') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot verify payment for expired booking',
+            ], 422);
+        }
+
         $payment->update([
             'status' => 'success',
             'paid_at' => now(),
         ]);
 
-        $payment->booking->update(['status' => 'paid']);
+        $payment->booking->update([
+            'status' => 'paid',
+            'reserved_until' => null,
+        ]);
 
         return response()->json([
             'success' => true,

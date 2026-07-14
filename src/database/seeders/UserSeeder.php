@@ -11,11 +11,11 @@ class UserSeeder extends Seeder
     {
         // Admin user
         User::firstOrCreate(
-            ['email' => 'admin@ticketing.com'],
+            ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Admin',
-                'email' => 'admin@ticketing.com',
-                'password' => bcrypt('password'),
+                'email' => 'admin@gmail.com',
+                'password' => bcrypt('admin123'),
                 'phone' => '081234567890',
                 'role' => 'admin',
                 'email_verified_at' => now(),

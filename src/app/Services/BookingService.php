@@ -6,7 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingDetail;
 use App\Models\Ticket;
 use Illuminate\Support\Str;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class BookingService
 {
@@ -17,17 +17,21 @@ class BookingService
         try {
             $totalAmount = 0;
             $bookingCode = 'TB-' . date('Ymd') . '-' . Str::random(4);
+            $reservedUntil = now()->addMinutes(10);
 
             $booking = Booking::create([
                 'user_id' => $userId,
                 'booking_code' => $bookingCode,
                 'total_amount' => 0,
-                'status' => 'pending',
+                'status' => 'reserved',
+                'reserved_until' => $reservedUntil,
             ]);
 
             foreach ($items as $item) {
-                $ticketType = \App\Models\TicketType::findOrFail($item['ticket_type_id']);
-                
+                $ticketType = \App\Models\TicketType::where('id', $item['ticket_type_id'])
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
                 if (($ticketType->quota - $ticketType->sold) < $item['quantity']) {
                     throw new \Exception('Insufficient ticket quota for ' . $ticketType->name);
                 }
@@ -84,6 +88,30 @@ class BookingService
 
             return $booking;
 
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function expireBooking(Booking $booking)
+    {
+        if ($booking->status !== 'reserved' || $booking->reserved_until === null || $booking->reserved_until->isFuture()) {
+            throw new \Exception('Booking is not eligible for expiration');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $booking->update(['status' => 'expired']);
+
+            foreach ($booking->bookingDetails as $detail) {
+                $detail->ticketType->decrement('sold', $detail->quantity);
+            }
+
+            DB::commit();
+
+            return $booking;
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

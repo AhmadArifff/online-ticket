@@ -9,12 +9,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
+
             $table->id();
-            $table->unsignedBigInteger('user_id')->index();
-            $table->foreign('user_id', 'fk_bookings_user_id')->references('id')->on('users')->onDelete('cascade');
+
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->string('booking_code')->unique();
+
             $table->decimal('total_amount', 10, 2);
-            $table->enum('status', ['pending', 'paid', 'cancelled', 'expired'])->default('pending')->index();
+
+            $table->enum('status', [
+                'pending',
+                'paid',
+                'cancelled',
+                'expired',
+                'reserved'
+            ])->default('pending');
+
+            $table->dateTime('reserved_until')->nullable();
+
             $table->timestamps();
         });
     }

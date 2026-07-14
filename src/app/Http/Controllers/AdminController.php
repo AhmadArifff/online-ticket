@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -19,7 +20,9 @@ class AdminController extends Controller
 
     public function dashboard(): View
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -33,10 +36,16 @@ class AdminController extends Controller
             ->limit(10)
             ->get();
 
-        $eventStats = Event::selectRaw('id, name, (SELECT COUNT(*) FROM booking_details WHERE event_id = events.id) as booking_count')
-            ->latest()
+        $eventStats = Event::latest()
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function ($event) {
+                $bookingCount = $event->ticketTypes()->with('bookingDetails')->get()->sum(function ($ticketType) {
+                    return $ticketType->bookingDetails->count();
+                });
+                $event->booking_count = $bookingCount;
+                return $event;
+            });
 
         return view('pages.admin-dashboard', compact(
             'totalEvents',
@@ -50,7 +59,9 @@ class AdminController extends Controller
 
     public function eventsIndex(): View
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -63,7 +74,9 @@ class AdminController extends Controller
 
     public function eventCreate(): View
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -72,7 +85,9 @@ class AdminController extends Controller
 
     public function eventEdit(Event $event): View
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -83,7 +98,9 @@ class AdminController extends Controller
 
     public function storeEvent(StoreEventRequest $request): RedirectResponse
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -96,7 +113,9 @@ class AdminController extends Controller
 
     public function updateEvent(UpdateEventRequest $request, Event $event): RedirectResponse
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -109,7 +128,9 @@ class AdminController extends Controller
 
     public function destroyEvent(Event $event): RedirectResponse
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -123,7 +144,9 @@ class AdminController extends Controller
     // Store new event (web)
     public function eventStore(\App\Http\Requests\StoreEventRequest $request)
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -138,7 +161,9 @@ class AdminController extends Controller
     // Update existing event (web)
     public function eventUpdate(\App\Http\Requests\UpdateEventRequest $request, Event $event)
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -153,7 +178,9 @@ class AdminController extends Controller
     // Delete event (web)
     public function eventDestroy(Event $event)
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -166,7 +193,9 @@ class AdminController extends Controller
 
     public function bookingsIndex(): View
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 
@@ -179,7 +208,9 @@ class AdminController extends Controller
 
     public function reports(): View
     {
-        if (!auth()->user()->isAdmin()) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!($user && $user->isAdmin())) {
             abort(403);
         }
 

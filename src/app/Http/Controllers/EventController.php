@@ -32,8 +32,9 @@ class EventController extends Controller
         return view('pages.events', compact('events', 'categories'));
     }
 
-    public function show(Event $event): View
+    public function show($slug): View
     {
+        $event = Event::where('slug', $slug)->where('status', 'published')->firstOrFail();
         $event = $this->eventService->getEventDetail($event);
         $relatedEvents = $this->eventService->getRelatedEvents($event, 3);
 

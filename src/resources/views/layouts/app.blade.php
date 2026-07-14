@@ -95,12 +95,47 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/events">Event</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/my-bookings">Booking Saya</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
-                    </li>
+                    @auth
+                        <li class="nav-item">
+                            <a class="nav-link" href="/my-bookings">Booking Saya</a>
+                        </li>
+                        @if(auth()->user()->isAdmin())
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.dashboard') }}">Admin Panel</a>
+                            </li>
+                        @endif
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) . '&background=667eea&color=fff&rounded=true&size=32' }}" alt="Avatar" class="rounded-circle" width="32" height="32">
+                                <span class="ms-2">{{ auth()->user()->name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                @if(Route::has('profile.edit'))
+                                    <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Edit Profil</a></li>
+                                @endif
+                                @if(Route::has('bookings.index'))
+                                    <li><a class="dropdown-item" href="{{ route('bookings.index') }}">Booking Saya</a></li>
+                                @endif
+                                @if(auth()->user()->isAdmin())
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="fas fa-cog me-2"></i>Admin Panel</a></li>
+                                @endif
+                                <li><hr class="dropdown-divider"></li>
+                                @if(Route::has('logout'))
+                                    <li>
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button type="submit" class="dropdown-item">Logout</button>
+                                        </form>
+                                    </li>
+                                @endif
+                            </ul>
+                        </li>
+                    @else
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">Login</a>
+                        </li>
+                    @endauth
                 </ul>
             </div>
         </div>

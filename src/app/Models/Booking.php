@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
-    protected $fillable = ['user_id', 'booking_code', 'total_amount', 'status'];
+    protected $fillable = ['user_id', 'booking_code', 'total_amount', 'status', 'reserved_until'];
+
+    protected $casts = [
+        'reserved_until' => 'datetime',
+    ];
 
     public function user()
     {

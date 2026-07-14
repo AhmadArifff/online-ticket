@@ -31,7 +31,9 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.st
 
 // Authenticated Customer Routes
 Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/profile/edit', [AuthController::class, 'editProfile'])->name('profile.edit');
+    Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
     
     Route::get('/cart', [BookingController::class, 'cart'])->name('cart');
     Route::get('/checkout', [BookingController::class, 'checkout'])->name('checkout');
@@ -46,7 +48,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     Route::get('/events', [AdminController::class, 'eventsIndex'])->name('events.index');
     Route::get('/events/create', [AdminController::class, 'eventCreate'])->name('events.create');
+    Route::post('/events', [AdminController::class, 'eventStore'])->name('events.store');
     Route::get('/events/{event}/edit', [AdminController::class, 'eventEdit'])->name('events.edit');
+    Route::put('/events/{event}', [AdminController::class, 'eventUpdate'])->name('events.update');
+    Route::delete('/events/{event}', [AdminController::class, 'eventDestroy'])->name('events.destroy');
     
     Route::get('/bookings', [AdminController::class, 'bookingsIndex'])->name('bookings.index');
     

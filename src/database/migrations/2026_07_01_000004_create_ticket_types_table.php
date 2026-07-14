@@ -10,11 +10,16 @@ return new class extends Migration
     {
         Schema::create('ticket_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('event_id')->references('id')->on('events')->cascadeOnDelete()->index();
+
+            $table->foreignId('event_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->string('name');
             $table->decimal('price', 10, 2);
             $table->integer('quota');
             $table->integer('sold')->default(0);
+
             $table->timestamps();
         });
     }
@@ -24,5 +29,3 @@ return new class extends Migration
         Schema::dropIfExists('ticket_types');
     }
 };
-                $table->unsignedBigInteger('event_id')->index();
-                $table->foreign('event_id', 'fk_ticket_types_event_id')->references('id')->on('events')->onDelete('cascade');

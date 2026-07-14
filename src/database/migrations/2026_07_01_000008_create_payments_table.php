@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('payment_method');
             $table->string('transaction_id')->nullable();
             $table->decimal('amount', 10, 2);
-            $table->enum('status', ['pending', 'success', 'failed'])->default('pending')->index();
+            $table->enum('status', ['pending', 'success', 'failed', 'completed'])->default('pending')->index();
             $table->dateTime('paid_at')->nullable();
             $table->timestamps();
         });
